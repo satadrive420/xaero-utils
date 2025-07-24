@@ -1,0 +1,5 @@
+# Mode options: fairplay, none, full
+mode: "fairplay"
+
+# If true, allows world map cave layers in Nether when in fairplay mode
+allow-nether-cave-layers: false
