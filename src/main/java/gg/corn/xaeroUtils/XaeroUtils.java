@@ -5,6 +5,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.kyori.adventure.text.Component;
@@ -22,7 +23,6 @@ public class XaeroUtils extends JavaPlugin implements Listener {
     @Override
     public void onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        //On Bukkit, calling this here is essential, hence the name "load"
         PacketEvents.getAPI().load();
     }
 
@@ -39,7 +39,6 @@ public class XaeroUtils extends JavaPlugin implements Listener {
             mode = "full";
         }
 
-        // Initialize PacketEvents
         PacketEvents.getAPI().init();
         protocolManager = PacketEvents.getAPI().getProtocolManager();
 
@@ -56,7 +55,14 @@ public class XaeroUtils extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        long delay = 20L; // 1 second
+        long delay = 40L;
+        getServer().getScheduler().runTaskLater(this, () -> sendMinimapStatus(player), delay);
+    }
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent event) {
+        final Player player = event.getPlayer();
+        long delay = 40L;
         getServer().getScheduler().runTaskLater(this, () -> sendMinimapStatus(player), delay);
     }
 
@@ -78,10 +84,18 @@ public class XaeroUtils extends JavaPlugin implements Listener {
     }
 
     private void sendSystemChat(Player player, String message) {
-        Component comp = Component.text(message);
-        WrapperPlayServerSystemChatMessage packet = new WrapperPlayServerSystemChatMessage(false, comp);
-        Object channel = protocolManager.getChannel(player.getUniqueId());
-        protocolManager.sendPacketSilently(channel, packet);
-        getLogger().info("Sent system chat to " + player.getName() + ": " + message);
+        try {
+            if (player == null || !player.isOnline()) return;
+
+            Component comp = Component.text(message);
+            WrapperPlayServerSystemChatMessage packet = new WrapperPlayServerSystemChatMessage(false, comp);
+            protocolManager.sendPacketSilently(player, packet);
+            getLogger().info("Sent system chat to " + player.getName() + ": " + message);
+
+        } catch (Exception ex) {
+            getLogger().warning("Skipped system chat (player likely disconnected mid-send): " + ex.getClass().getSimpleName());
+        }
+
     }
+
 }

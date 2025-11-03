@@ -26,8 +26,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.9.3")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.10.0")
 }
 
 tasks {
